@@ -1,21 +1,26 @@
 {
-  "name": "My Docs",
-  "description": "My documentation site",
+  "name": "FDSA & QB - Docs",
+  "description": "FDSA & QB - Documentation site",
   "sidebar": [
-  {
-    "group": "Getting Started",
-    "pages": [
-      {
-        "title": "Getting to know docs.page",
-        "href": "/",
-        "icon": "rocket"
-      },
-      {
-        "title": "Next Steps",
-        "href": "/next-steps",
-        "icon": "arrow-right"
-      }
-    ]
-  }
-]
+    {
+      "group": "Getting Started",
+      "pages": [
+        {
+          "title": "Getting to know docs.page",
+          "href": "/",
+          "icon": "rocket"
+        },
+        {
+          "title": "Getting Started",
+          "href": "/getting-started",
+          "icon": "arrow-right"
+        },
+        {
+          "title": "Development",
+          "href": "/development",
+          "icon": "arrow-right"
+        }
+      ]
+    }
+  ]
 }

@@ -1,0 +1,146 @@
+---
+title: Getting started
+description: Welcome developer here you'll start to setup FDSA
+---
+
+## Objective
+
+This page steps through the process of running an instance of FDSA, for development or testing.
+
+## Pre-requisites
+To run the server in development, the following need to be in place:
+- Ubuntu Linux 18.04 or latest
+- `curl` and `jq` can be useful for testing API calls on the command line
+- Docker
+- Python 3.9 or greater - Anaconda python is a convenient basis for this
+
+## Run the server in development mode:
+Following are the instructions to run the project in dev mode.
+
+### 1. Change to the GIT branch you want to run
+Use GIT to switch to the branch you want to run.
+```sh
+git checkout <branch-name>
+```
+
+Example: `git checkout fdsa-new-ui`
+
+### 2. Set up the environment
+Copy the `.env-template` file to a new `.env` file and check the parameters.
+```sh
+cp .env-template .env
+```
+To replace a previously existent `.env` use:
+```sh
+cp -f .env-template .env
+```
+
+Make sure the environment variables in the .env file looks like this:
+```
+# -----------------------------------------------------------------------------------
+# Environment mode
+# -----------------------------------------------------------------------------------
+FDSA_VERIFY_SSL=1
+SEND_EMAILS='False'
+ENV_MODE='dev'
+```
+
+### 3. Generate self-signed certificates for HTTPS
+Execute the `add_certificates.sh` script:
+```sh
+bash add_certificates.sh
+```
+> Note this only needs to be done once. In subsequent runs, jump to next step.
+
+
+### 3.1 (Optional) Open test database ports to access through DBeaver
+
+1. Go to the `docker-compose.yml` file
+2. Look for the fdsa_db service and map the ports `- 5555:5432` below the `expose` line as I did below:
+   ```yml
+     fdsa_db:
+       ...
+        expose:
+          - 5432
+        ports:
+          - 5555:5432
+       ...
+   ```
+3. Once the FDSA is started, you'll be able to connect to the DB by using the following credentials:
+   ```
+   host: localhost
+   port: 5555
+   database name: fdsa_appliance
+   user: pguser
+   password: pgpass
+   ```
+
+### 4. Build and run the docker containers for server using the startup script:
+First make sure you don't have any processes on the reference ports (i.e. Apache, PostgreSQL) which would interfere
+with the docker ones. If you are a first time runner, run `docker login` with credentials provided by the dev team.
+
+```sh
+bash startup.sh
+```
+When completed the superadmin password will be promted in the terminal.
+
+At this point, by default the server will be accessible on https://localhost.
+You can see the server status at the health check endpoint using `curl` and `jq`:
+```sh
+curl -k https://localhost/api/common/v1.1.0/health_check | jq
+```
+> Note `-k` is added to avoid verifying the self-signed certificates. It should be removed in production
+
+**You can now go on your browser to `https://localhost/admin`, register the first admin and start using the appliance**
+
+Please note that the env template assumes `localhost` will be your fully-qualified domain name. If you want to use a custom
+domain name, modify the `FQDN`, `KEYCLOAK_HOSTNAME` and `FDSA_BASE_URL` variables in the script.
+
+### 5. (Optional) Run the [integration smoke test](../smoketest.sh)
+Which tests some basic functionality is working:
+```sh
+bash smoketest.sh --stdout
+```
+
+## 6. Cleaning up
+Once the server has been built and run, it can be stopped using the `uninstaller.sh` script:
+```sh
+bash uninstaller.sh
+```
+
+## 7. Development
+It is recommended to install a virtual environment inside `api` to run the tests and development.
+
+```
+virtualenv venv -p python3.10  # only if you don't have a virtualenv yet
+source venv/bin/activate
+pip install -e fdsa_backend # only needed if dependencies have changed
+pip install pytest pytest-env
+```
+
+### Running unit tests
+
+Running the unit tests only requires a test database.
+
+1. Go to `/api/fdsa_backend/tests`.
+2. Run  `docker compose up -d` to start the test database or use a local Postgres DB of your own, based on the pytest.ini file.
+3. Go back to `/api`, and run the following command:
+
+```
+pytest
+```
+
+Or `pytest <test_name>` to run a specific test, e.g. `pytest test_validation_helpers.py`.
+
+
+### Using pre-commit hooks
+For a development environment it is recommended to use pre-commit hooks:
+
+```sh
+pip install pre-commit
+pre-commit install
+```
+
+This will automatically run some standard checks to your commits.
+The same checks will be performed in CI, so it's easier to run on pre-commit.
+

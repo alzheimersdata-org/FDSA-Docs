@@ -1,56 +1,170 @@
 ---
-title: Heyyyy!
+title: FDSA and QB - Documentation URL
 description: Get started with docs.page
 ---
 
-Welcome to docs.page! The init command you just ran has created a basic file struture in your project to help you get started.
+## Overview
 
-## Walkthrough
+The **Federated Data Sharing Appliance (FDSA)** is a Linux-based production implementation of the [Common API](https://github.com/federated-data-sharing/common-api/blob/master/doc/API_Overview.md) standards for remote querying and computation in distributed research environments. Developed by the **Alzheimer's Disease Data Initiative (ADDI)**, FDSA enables secure federated research on highly sensitive datasets where data use agreements prevent data movement or direct access.
 
-### Configuration
+## Purpose and Mission
 
-In the root of your directory a new `docs.json` file has been created. This file is used to configure your documentation site. You can customize the name, description, and sidebar, theme, logos and more using this file.
+### Primary Objective
+FDSA serves as a standalone node in a federated network, allowing data controllers to set up secure data sharing infrastructure while maintaining strict control over their data. The core purpose is to enable collaborative research without compromising data privacy or violating data use agreements.
 
-Here's a basic example of what the file looks like:
+### ADDI's Vision
+ADDI envisions a future where open data and global collaborations power the end of Alzheimer's disease and related dementias. FDSA accelerates the development of new treatments by enabling researchers worldwide to access, use, and share dementia-related data securely and efficiently.
 
-```
-{
-  "name": "My Docs",
-  "description": "My documentation site",
-  "sidebar": [
-  {
-    "group": "Getting Started",
-    "pages": [
-      {
-        "title": "Getting to know docs.page",
-        "href": "/",
-        "icon": "rocket"
-      },
-      {
-        "title": "Next Steps",
-        "href": "/next-steps",
-        "icon": "arrow-right"
-      }
-    ]
-  }
-]
-}
-```
+## Key Features
 
-To learn more about the advanced configuration options, check out the [docs](https://use.docs.page/configuration).
+### Data Access Levels
 
-### Content
+FDSA supports two distinct levels of data access:
 
-docs.page uses the `docs` directory to store your documentation pages. Two pages have been created for you:
+#### Level 1: Record-Level Data Access
+- **Purpose**: Direct querying and retrieval of individual records
+- **Capabilities**: 
+  - Remote querying with record-level data return
+  - Direct data access for approved researchers
+  - Real-time data exploration capabilities
+- **Use Cases**: Exploratory data analysis, data validation, preliminary research
 
-- `index.mdx` - The home page of your documentation site, resolves to the root URL.
-- `next-steps.mdx` - A page to help you get started with docs.page, resolves to `/next-steps`.
+#### Level 2: Summary/Analysis-Level Data Access
+- **Purpose**: Secure computation on data without direct record access
+- **Capabilities**:
+  - Remote querying with summary/analysis results only
+  - Containerized analysis execution
+  - Results review and approval workflow
+- **Use Cases**: Statistical analysis, machine learning, collaborative research
 
-Documentation can be written using the standard [GitHub Flavored Markdown Spec](https://github.github.com/gfm/) and also supports the use of [MDX](https://mdxjs.com/), 
-with the ability to render custom [components](https://use.docs.page/components) for more advanced use cases.
+### Core Functionality
 
-## Preview
+#### 1. Data Access Request Management
+- **FAIR Integration**: Seamless integration with ADWB FAIR Data Access Requests
+- **Workflow Support**: Complete lifecycle management from request to approval/denial
+- **Automated Processing**: Support for automatic approval workflows
+- **Review System**: Comprehensive review and approval mechanisms
 
-To preview your documentation site, head over to [https://docs.page/preview](https://docs.page/preview) in your browser and open this directory.
+#### 2. User Management
+- **Multi-Factor Authentication**: Built-in mobile authenticator 2FA
+- **Role-Based Access**: Granular permission system (administrator, superadmin, standard user, requester)
+- **Auto-User Creation**: Automatic user account creation upon data access request approval
+- **User Actions**: Complete user lifecycle management (create, update, disable, role changes)
 
-Previewing your documentation site will allow you to see the changes you make in real-time before you publish to the world.
+#### 3. Security Features
+- **Encryption**: End-to-end data encryption for sensitive information
+- **Token Management**: Secure access token generation and validation
+- **Audit Logging**: Comprehensive audit trails for all system activities
+- **IP Validation**: Network-level access controls
+
+#### 4. Data Source Management
+- **Database Connectors**: Easy integration with various data sources
+- **Athena Support**: AWS Athena integration for cloud-based data
+- **PostgreSQL**: Built-in PostgreSQL database with external connection support
+- **Docker Registry**: Azure Docker Registry connector for Level 2 analysis
+
+#### 5. Task and Query Management
+- **Job States**: Complete workflow tracking (Queued, Initializing, Running, Quarantined, Approved/Rejected, Complete/Rejected)
+- **Query History**: Comprehensive logging of all data queries
+- **Result Management**: Secure handling and delivery of analysis results
+
+## Technical Architecture
+
+### System Requirements
+- **OS**: Ubuntu 20.04 LTS or higher
+- **CPU**: 4 cores or more
+- **Memory**: 8GB or more
+- **Storage**: 100GB minimum
+- **Network**: Public IP with port 443 open
+- **SSL Certificate**: Public SSL/TLS v2.1 CA Certificate required
+
+### Technology Stack
+- **Backend**: Python Flask application
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **Authentication**: Keycloak integration
+- **Containerization**: Docker and Docker Compose
+- **Frontend**: Vue.js with Vuetify
+- **API Documentation**: OpenAPI/Swagger
+
+### Deployment Options
+- **Docker Compose**: Local development and testing
+- **Production**: Full appliance deployment with systemd service
+- **Cloud**: Azure Container Instances (ACI) support
+
+## Integration Capabilities
+
+### FAIR Data Platform Integration
+FDSA integrates seamlessly with the FAIR (Findable, Accessible, Interoperable, Reusable) data platform:
+- **Automated DAR Processing**: Receives and processes data access requests from FAIR
+- **Callback System**: Real-time status updates back to FAIR
+- **Webhook Support**: Configurable webhooks for external system integration
+- **Trust Synchronization**: Maintains trust status alignment between systems
+
+### Query Builder Integration
+- **ADDI Query Builder**: Web-based interface for building and executing federated queries
+- **GraphQL Support**: Advanced query capabilities through GraphQL
+- **CSV/Excel Export**: Multiple output formats for analysis results
+
+## Use Cases
+
+### 1. Multi-Institutional Research
+Enable collaborative research across multiple institutions while maintaining data sovereignty and compliance with local regulations.
+
+### 2. Clinical Trial Data Analysis
+Secure analysis of clinical trial data without moving sensitive patient information across institutional boundaries.
+
+### 3. Epidemiological Studies
+Large-scale population studies using federated data from multiple healthcare systems.
+
+### 4. Drug Discovery
+Accelerate drug discovery by enabling secure access to diverse datasets across research institutions.
+
+### 5. Regulatory Compliance
+Meet strict regulatory requirements for data handling in healthcare and research environments.
+
+## Licensing and Support
+
+### License Model
+- **Non-Commercial License**: Free for academic and research institutions
+- **Annual Renewal**: Simple license renewal process
+- **ADDI Support**: Comprehensive support through ADDI Connect platform
+
+### Getting Started
+1. **Request License**: Contact fdsa.support@alzheimersdata.org
+2. **Installation**: Follow the installation guide in the release documentation
+3. **Configuration**: Set up SSL certificates and network requirements
+4. **Integration**: Configure FAIR integration and data sources
+5. **Testing**: Run demonstration setup to verify functionality
+
+## Documentation and Resources
+
+### Official Documentation
+- **Getting Started Guide**: Step-by-step installation and configuration
+- **API Documentation**: Complete OpenAPI/Swagger documentation
+- **Release Notes**: Detailed feature updates and bug fixes
+- **Demonstration Setup**: End-to-end testing procedures
+
+### Community Resources
+- **ADDI Connect**: Community platform for support and collaboration
+- **GitHub Repository**: Open source code and issue tracking
+- **Training Materials**: Video tutorials and documentation
+
+## Future Development
+
+FDSA is actively developed with ongoing improvements:
+- Enhanced security features
+- Additional data source connectors
+- Improved user interface
+- Advanced analytics capabilities
+- Expanded API functionality
+
+## Contact and Support
+
+- **Email**: fdsa.support@alzheimersdata.org
+- **Website**: https://www.alzheimersdata.org/
+- **Documentation**: https://www.alzheimersdata.org/fdsa
+- **Community**: https://community.addi.ad-datainitiative.org/
+
+---
+
+*FDSA is developed and maintained by the Alzheimer's Disease Data Initiative (ADDI) to accelerate research and collaboration in the fight against Alzheimer's disease and related dementias.* 

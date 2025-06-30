@@ -1,0 +1,166 @@
+---
+title: Development
+description: Get started with docs.page
+---
+
+
+## Introduction
+
+Guidance for contributors to the project.
+
+## Configuring Visual Studio Code
+
+To make debugging the API easier, set up a [launch configuration](https://code.visualstudio.com/docs/editor/debugging#_launch-configurations) and dotenv environment file:
+
+Create and edit a `./vscode/launch.json` file:
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flask",
+            "type": "python",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "module": "flask",
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "FLASK_APP": "${workspaceFolder}/api/app.py",
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "1",
+                "SUPERADMIN_EMAIL": "fdsa.supera@gmail.com",
+                "SUPERADMIN_NAME": "super admin",
+                "ENV_MODE": "dev",
+                "PGHOST": "localhost",
+                "FDSA_BASE_URL": "http://localhost:5000",
+                "FDSA_BASE_URL_INTERNAL": "http://localhost:5000",
+                "HASURA_BASE_URL": "http://localhost:8081",
+                "KEYCLOAK_BASE_URL": "http://localhost:8080/auth"
+            },
+            "args": [
+                "run"
+            ]
+        }
+    ]
+}
+```
+
+Note to avoid reloads or debug - set `FLASK_DEBUG` to 0 and add these parameters to `args`:
+```
+"--no-debugger",
+"--no-reload"
+```
+
+The `./vscode/settings.json` file should be set as such to avoid having extra folders created under random places:
+```json
+{
+    "python.testing.pytestArgs": [
+        "--rootdir",
+        "${workspaceFolder}",
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+}
+```
+
+## Environment settings
+
+In case you need to run the debugger, set the environment variable `ENV_MODE` to 'dev'. This will tell `startup.sh` to use a different docker-compose file, where the api, keycloak, hasura, and db have their port exposed to the host. 
+Flask has the config dynamically set based on the `ENV_MODE` value. Check the `api/configuration.py` file to understand which environments are available and which values these have.
+
+## DB Migrations
+
+The migrations are performed by a dependency, called `Flask-migrate`. In the fdsa_api entrypoint script you will be able to see 4 commands to set them up:
+```sh
+# Initialize the DB connection
+flask db init
+# Apply changes
+flask db upgrade
+```
+
+Once all is done, there will be some content under the `migration_files` folder.
+- `version` is a folder that contains the migration script files, with the DB changes required. Naming template will have the date followed by the version and the slug message in case the migration is created manually.
+- `alembic.ini` is the config file, if not available, it will be automatically created. Currently we only provide the migration file naming template in addition to the default settings.
+- `env.py` another script config file, automatically generated. *DO NOT CHANGE IT*
+- `README` just a simple README
+- `script.py.mako` defines the template for the migration file structure. *DO NOT CHANGE IT*
+
+To check the db migration version, there is a dedicated table, called `alembic_version`.  This table has only one column, and only one entry. This entry will report the latest migration file version (an Hex string) which will be replaced everytime a new file is generated.
+
+To manually check:
+```sh
+docker exec fdsa_api psql -c 'SELECT version_num FROM alembic_version LIMIT 1;'
+```
+
+### Run migrations manually
+Set the `ENV_MODE` to `'dev'` or `'local'` in the `.env` file.
+
+```sh
+export FLASK_APP="api/app.py"
+flask db init -d migration_files
+flask db upgrade -d migration_files
+```
+1. Export a FLASK_APP env var which will have scope only on the current terminal session.
+2. Then we run the same commands we have in the entrypoint script with the ` -d migration_files` arguments, effectively telling `Flask-Migrate` that the current migrations are located in another folder. If not specified, `Flask-Migrate` will create a new folder, called `migrations`.
+3. `init` will check if a folder is in place, if not one is created.
+4. `upgrade` will apply pending migrations
+
+*SIDE NOTE*:
+Since the `fdsa_api` container has a the `migration_files` folder mounted as volume with the name `migrations` (which is the default folder name for `Flask-Migrate`) there is no need to use `-d` argument when in the `entrypoint` or when using `flask db` commands through `docker exec -it fdsa_api`
+
+In case a raw SQL in needed to be part of the migrations, i.e. initialize a default value on a table:
+- Create a revision migration file, which basically means create an empty migration file:
+    ```sh
+    flask db revision --message "Custom message, like a git commit" -d migration_files/
+    ```
+- In the newly created file, add your sql queries inside the `upgrade()` function:
+    ```python
+    op.execute("INSERT ....")
+    ```
+- (optional) Apply the migrations manually with `flask db upgrade -d migration_files`.  Otherwise the startup.sh script will automatically apply them.
+
+In case you want to check models changes and generate the file automatically:
+```sh
+flask db revision --autogenerate --message "Custom message, like a git commit" -d migration_files/
+```
+
+Note: To me it is easier to just run the migrations from inside the docker container (fdsa_api), using:
+```sh
+docker exec -ti fdsa_api bash
+```
+then:
+```sh
+flask db revision --autogenerate --message "Custom message, like a git commit"
+```
+
+### Specific migration instructions
+In case the --autogenerate doesn't pick up the model changes, sometimes a change in column properties (i.e String -> DateTime) is not detected correctly. In that case you might want to write the migration manually, by adding:
+```python
+op.alter_column(table_name, column_name, type_=new_type)
+```
+alembic provides some good APIs to do most of the operations, check the docs [here](https://alembic.sqlalchemy.org/en/latest/ops.html) for more details.
+
+
+### Downgrade / revert migration
+In case something goes wrong during migrations, these can be reverted. Simply run `flask db downgrade -d migration_files`. By default, it will revert the last migration. If more need to be reverted, add '-' and the number of migrations to be reverted, i.e. if we want to revert the last 3 migrations:
+```sh
+flask db downgrade -d migration_files -3
+```
+No spaces between the minus character and the number.
+
+### Create a Foreign Key relationship on the models
+
+It works a bit differently than we were used to. The Table or model that will have a foreign key will need to have the following syntax:
+```python
+dataset_id = db.Column(db.Integer, db.ForeignKey("datasets.dataset_id", ondelete="CASCADE"))
+```
+`db.ForeignKey` will have as first argument the FK source coulum. In this case within the `Dictionary` table will refer the datasets table, dataset_id column.
+`ondelete` will specify the policy when the source entry (`datasets.dataset_id`) gets removed, the related `Dictionary` entry will be deleted as well. Otherwise, the deletion of the `dataset` entry will be denied since is referred by `Dictionary`
+
+Second step is to set up the relationship on the `Dataset` table to with the following:
+```python
+dictionary = relationship("Dictionary", backref=backref("dictionary", cascade="all, delete"))
+```
+`relationship` is basically the `ForeignKey` counterpart. Here we are declaring that the table itself will be referred from `dictionary`, and on `dataset` entry deletion the entry in `dictionary` will need to follow the same fate.
+Mind that `dictionary` (in this example) won't be a field in `Datasets`, it only defines a relationship, the name was choosen to be the same as the related table just for clarity.
