@@ -1,0 +1,145 @@
+---
+title: Installation Guide
+---
+
+# Installation Guide
+
+## Prerequisites for Installing the Federated Data Sharing Appliance
+
+Before you begin the installation process, there are several prerequisites you need to fulfill to ensure a smooth and secure deployment. This section walks you through the necessary steps to prepare for the installation, including obtaining a License Key, SSH Key, SSL Certificate, and setting up a Fully Qualified Domain Name (FQDN) and SMTP Server.
+
+### Prerequisite 1: System Requirements
+
+- **OS:** Linux (Ubuntu 20/22, Rocky OS v8+)
+- **CPU:** 4 cores or more
+- **Memory:** 16GB or higher
+- **Storage:** 100GB (minimum)
+- **Privileged access:** root access
+- **Open Port:** 443 accessible from the internet
+
+The following standard Ubuntu Linux packages are required for installation. If these packages are not already installed, they will be automatically installed during the setup process:
+
+- Git (v1.8+)
+- Docker (v28)
+- Docker Compose (v2.35)
+- jq (v1.6)
+- apt-transport-https
+- ca-certificates
+- curl (v8.5)
+- gnupg
+- lsb-release
+- neofetch
+- postgresql-client (v16.9)
+- telnet (v2.5)
+
+### Prerequisite 2: SSL Certificate
+
+An SSL certificate ensures that data transmission between your appliance and users is encrypted and secure. You can obtain an SSL certificate in the following manner:
+
+- **SSL Purchase:** Purchase a public SSL/TLS v1.2+ CA Certificate (`.crt` and `.key`) from a reputable Certificate Authority (CA) like GoDaddy, DigiCert, or Comodo. Avoid using free solutions like 'Let's Encrypt.'
+- **CSR Generation:** Follow the CA's instructions to generate a Certificate Signing Request (CSR) and submit it. Once approved, you'll receive the SSL certificate files, including the public key, private key, and intermediate certificates. Keep these secure.
+- **Certificate Note:** When obtaining your SSL certificate, remember to coordinate with your administrator to extract the private key.
+
+### Prerequisite 3: Fully Qualified Domain Name and Public IP Address
+
+A Fully Qualified Domain Name (FQDN) is necessary to access your Federated Data Sharing Appliance over the internet. Here's how to set up an FQDN:
+
+- **DNS Selection:** Choose a domain name registrar (e.g., GoDaddy, Namecheap) and register a domain name.
+- **DNS Configuration:** Configure the DNS records for your domain to point to your server's public IP address.
+- **DNS Resolution:** Ensure that your chosen FQDN resolves correctly to your server.
+- **FAIR Whitelisting:** Email the FQDN to [fdsa.support@alzheimersdata.org](mailto:fdsa.support@alzheimersdata.org) for ADWB FAIR Whitelisting. If using a Load Balancer, send the Public facing FQDN.
+
+### Prerequisite 4 (Optional): SMTP Mail Server
+
+> **Note:** When you install our default SMTP configuration, emails could go to spam since it is a gmail.com address.
+
+An SMTP (Simple Mail Transfer Protocol) mail server is essential for sending email notifications, alerts, and system updates from your Federated Data Sharing Appliance. Setting up an SMTP mail server is crucial for effective communication. Here's how to add it as a prerequisite:
+
+- **Select an SMTP Server:** Choose an SMTP server or service provider that meets your needs. Popular choices include Gmail, Microsoft Exchange, or a self-hosted server like Postfix or Sendgrid.
+- **Configure SMTP Settings:** Obtain SMTP server details such as the hostname or IP address, port number, and encryption settings (SSL/TLS). If you're using a third-party service like Gmail, ensure you have an email account and create an "App Password" or enable "Less Secure Apps" as needed.
+- **Set Up SMTP Relay:** Depending on your Federated Data Sharing Appliance's requirements, you may need to configure it to use the SMTP server as a relay. This typically involves specifying the SMTP server's details, username, and password for authentication.
+- **Testing:** Before proceeding with the installation, test your SMTP server configuration by sending a test email from the command line or through the appliance settings.
+- **Secure SMTP Credentials:** Ensure that any credentials (username and password) required to access the SMTP server are stored securely. Use environment variables or a secure credentials manager to protect sensitive information.
+
+### Prerequisite 5: SSH Key
+
+To get the project, you will need the SSH Key. Here is how to create one:
+
+1. In the server where FDSA is going to be installed, start the root user mode:
+
+   ```bash
+   sudo su
+   ```
+
+2. Generate an SSH Key using your email (you can leave the passphrase empty, but it's optional):
+
+   ```bash
+   ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+   ```
+
+3. View the generated SSH Key:
+
+   ```bash
+   cat /root/.ssh/id_rsa.pub
+   ```
+
+4. Copy and send the Public Key to [fdsa.support@alzheimersdata.org](mailto:fdsa.support@alzheimersdata.org). Our support team will add your key to the GitHub FDSA-Release repository and notify you when it's ready.
+
+---
+
+## Installation Steps
+
+> **Note:**
+> - If you intend to use an external database instead of the default/local one, refer to the section 'How to use an external PostgreSQL DB for the internal FDSA management' before proceeding.
+> - To install behind a load balancer, please first read 'How to install behind a load balancer.'
+
+1. Start the root user mode:
+
+   ```bash
+   sudo su
+   ```
+
+2. Ensure the installation directory exists:
+
+   ```bash
+   mkdir -p /var/www
+   ```
+
+3. Navigate to the installation directory:
+
+   ```bash
+   cd /var/www/
+   ```
+
+4. Clone the release repository from one of the following options:
+
+   ```bash
+   git clone git@github.com:alzheimersdata-org/federated-data-sharing-appliance-releases.git
+   ```
+
+5. Enter the 'federated-data-sharing-appliance-releases' directory:
+
+   ```bash
+   cd federated-data-sharing-appliance-releases
+   ```
+
+6. Copy the '.env-template' and rename it to '.env':
+
+   ```bash
+   cp .env-template .env
+   ```
+
+7. Copy your SSL certificates to the 'ssl-certs' folder:
+
+   ```bash
+   cp -f <PATH_TO_YOUR_CERT>/fullchain_certfile.crt ./ssl-certs/fullchain_certfile.crt
+   cp -f <PATH_TO_YOUR_PRIVATE_KEY>/private_keyfile.key ./ssl-certs/private_keyfile.key
+   ```
+
+8. Start the appliance and complete the required fields:
+
+   ```bash
+   bash ubuntu-startup.sh host.example.com
+   ```
+
+After the installation is completed, you will receive your Root credentials as an output on the console.
