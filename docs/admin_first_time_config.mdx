@@ -1,0 +1,93 @@
+---
+title: Administrator - First Time Configuration
+description: Step-by-step guide for first-time FDSA administrators
+---
+
+This guide will walk you through the essential steps for configuring your FDSA instance as an administrator for the first time.
+
+## 1. Create the First Administrator
+- Navigate to `https://<your_domain>/admin` in your web browser.
+
+## 2. Sign In and Set Up Multi-Factor Authentication (MFA)
+- Sign in with your credentials.
+- Set up your Multi-Factor Authentication app as prompted.
+> **Note:** If MFA setup fails after scanning, ensure the time on your phone and the server are synchronized.
+
+## 3. Complete the First Login Setup
+- Follow the on-screen instructions to finish your initial login configuration.
+
+## 4. Overview Section
+- The Overview section provides a summary of FDSA status, including pending Data Access Requests (DARs) and task reviews.
+
+## 5. Data Access Requests Section
+- View detailed information about submitted DARs.
+- Click on an Access Request name to see its details.
+- Approve or reject the DAR from this window.
+
+> **Trust Mechanisms:**
+> - **By Dataset:** All tasks under that dataset are automatically marked COMPLETE without review.
+> - **By Project:** All tasks under that project code are automatically marked COMPLETE without review.
+
+## 6. Tasks Section
+- Review researcher-submitted tasks.
+- Click on a task name for details. Click on "Results" to view the task's output.
+
+## 7. Users Section
+### Adding a New FDSA User
+- Go to the Users tab and click **+ Add User**.
+- Enter the user's email and role, then click **Add User**.
+
+> **Note:** The user will receive an email with temporary credentials. After logging in, they must set up MFA and update their password.
+
+- Under **Actions**, you can change roles, reset MFA, disable, or delete users.
+
+## 8. Admin Settings Tab
+In the Settings section, you can:
+1. Manage datasource connections and datasets
+2. Configure SMTP settings
+3. Update FDSA organization information
+4. Add or delete model registries
+5. Add a DAR Webhook
+6. Update your license
+7. Manage token lifetimes
+8. Whitelist specific IPs for different FDSA components
+
+### 8.1 Data Tab
+- FDSA comes with a test data source (FDSA_TEST_DB) by default.
+- Review the instructions for creating a Datasource DB before adding it to FDSA.
+- Add the new datasource in FDSA.
+- Select the added datasource and click **+ Add dataset**.
+- Follow the instructions to generate a FAIR Data Steward Token.
+- Complete the form and click **Save**.
+> **Note:** You can also update and delete datasources and datasets from this window.
+
+### 8.2 SMTP Tab
+- Test and update the SMTP configuration here.
+
+### 8.3 Organization Info Tab
+- Update your FDSA organization information. This will be visible to researchers.
+
+### 8.4 Registries Tab
+- View available model registries for researchers.
+- FDSA Public and Private Registries are added by default during installation.
+
+### 8.5 Advanced Settings – License
+- Update your FDSA license if required.
+
+### 8.6 Advanced Settings – Webhook
+- Find more information about the Webhook feature here.
+
+### 8.7 Advanced Settings – Tokens
+- Configure the session token duration for researchers accessing the application.
+
+### 8.8 Advanced Settings – Whitelists
+- Manage access to FDSA components by IP address.
+- By default, all IPs are whitelisted. Once an IP is added, only that IP can access the specified component.
+> **Warning:** Incorrect IPs may block access to the appliance.
+
+## 9. Help Center
+- Access more information about FDSA in the Help Center section.
+
+## 10. Contact Us
+- If you encounter any issues with FDSA, please use the Contact Us section or email us for support.
+

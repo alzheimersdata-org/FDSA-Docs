@@ -1,0 +1,265 @@
+---
+title: How To's
+---
+
+# How To's
+
+## How to use an external PostgreSQL DB for the internal FDSA management
+
+> - Postgres DBs cannot have names with spaces, '-' or other special characters.
+> - External DB is mandatory when installing with Load Balancer.
+> - External DB is recommended for FDSA and Datasets in production.
+
+1. Log in to your default database:
+   ```bash
+   psql -h <HOST IP/url> -p <PORT> -U <user> postgres
+   ```
+2. Create the 'fdsa_user':
+   ```sql
+   CREATE USER fdsa_user WITH PASSWORD 'fdsa_pass' SUPERUSER;
+   ```
+3. Grant necessary access to 'fdsa_user':
+   ```sql
+   ALTER USER fdsa_user CREATEDB;
+   ALTER USER fdsa_user CREATEROLE;
+   ```
+4. Exit and log in with 'fdsa_user':
+   ```bash
+   \q
+   psql -h <HOST IP/url> -p <PORT> -U fdsa_user postgres
+   ```
+5. Create the required databases ('keycloak' and 'fdsa_database') using port 5432 and ensure it is open for FDSA connectivity:
+   ```sql
+   CREATE DATABASE keycloak;
+   CREATE DATABASE fdsa_database;
+   ```
+6. Grant permissions for the new user and schemas for newly created databases:
+   ```sql
+   \c keycloak;
+   grant all on schema public to fdsa_user;
+   \c fdsa_database;
+   grant all on schema public to fdsa_user;
+   ```
+7. Check your permissions on each database:
+   ```sql
+   \dn+
+   ```
+8. Update the 'Database Credentials' section in the `.env` file with your external database information (`PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`).
+9. When the installer asks if you want to use an external database, answer 'yes'.
+
+## How to create a Datasource DB
+
+> **Note:**
+> - FDSA only supports PostgreSQL Databases, and the maximum size recommended for schemas/datasets is 500 MB.
+> - The Max Number of columns per table is 1300.
+
+- When adding a data source in FDSA, avoid using the root user credentials and refrain from saving datasets under the 'public' schema. Follow these instructions:
+
+1. Login as root user (or whatever admin user you have) to your database server:
+   ```bash
+   psql -h <HOST IP/url> -p <PORT> -U <user> postgres
+   ```
+2. Create a new user (the one we are going to use to add the DB to FDSA):
+   ```sql
+   CREATE USER <username> WITH PASSWORD '<password>' SUPERUSER;
+   ```
+   > The `<username>` and `<password>` used here are the ones required when adding a Data Source.
+3. Give access to the new user:
+   ```sql
+   ALTER USER <username> CREATEDB;
+   ALTER USER <username> CREATEROLE;
+   ```
+4. Exit and login with the new user:
+   ```bash
+   \q
+   psql -h <HOST IP/url> -p <PORT> -U <username> postgres -W
+   ```
+5. As `<username>`, create the data source DB and switch to it:
+   ```sql
+   CREATE DATABASE <test-database>;
+   \c <test-database>
+   ```
+6. Then create a schema/dataset and add your research data there:
+   ```sql
+   CREATE SCHEMA <test-dataset>;
+   ```
+   > **IMPORTANT:** Additionally, add tables with their respective columns, foreign keys, primary keys, and indexes in this schema; this is required to be able to execute queries/tasks with joins from the Query Builder Tool. The maximum size supported for schemas/datasets is 500 MB.
+
+## How to connect to the internal database
+
+The connection between the server and the docker Database is made through the Docker CLI.
+
+- You should check the following database credentials in the `.env` file:
+
+  ```env
+  PGDATABASE='fdsa_appliance'
+  PGUSER='<user>'
+  PGPASSWORD='<password>'
+  PGPORT=<port>
+  PGHOST='fdsa_db'
+  PGDATABASE='fdsa_appliance'
+  PGUSER='pguser'
+  PGPASSWORD='pgpass'
+  ```
+
+1. Get inside the docker container:
+   ```bash
+   docker exec -it fdsa_db bash
+   ```
+2. Connect to the database using the psql command:
+   ```bash
+   psql -d <PGDATABASE> -U <PGUSER>
+   ```
+
+## How to create a data source and a dataset inside our test database
+
+It is necessary to define the data that you are going to insert and the schema that you are going to provide to make possible the creation of the data source/dataset.
+
+> **Note:** We suggest you create a directory with your csv and SQL files already there and upload them to the VM hosting FDSA.
+
+1. Copy data file.  
+   > **Note:** REMOVE COLUMN NAMES FROM CSV, TREAT IT AS DATA FILE
+   ```bash
+   docker cp /path/to/new_dataset.csv fdsa_api:/home
+   ```
+2. Copy the schema.txt file containing your schema and SQL instructions:
+   ```bash
+   docker cp /path/to/new_schema.sql fdsa_api:/home/new_schema.sql
+   ```
+3. Login to the local database ("PGDATABASE and PGUSER can be read in the .env file"):
+   ```bash
+   docker exec -it fdsa_api bash
+   psql
+   ```
+4. Create a database and schema:
+   ```sql
+   create database <database_name>;
+   \c <database_name>
+   create schema <schema_name>;
+   ```
+5. Grant some permissions to the db user and the newly created schema:
+   ```sql
+   grant all on schema <schema_name> to <fdsa_user>;
+   ```
+6. Import your SQL into the schema:
+   ```sql
+   \i /path/to/your/new/schema.sql
+   ```
+   OR if your table size is manageable, create the table with the schema definition:
+   ```sql
+   create table <schema_name>.<table_name>(
+     ...
+   );
+   ```
+7. Copy the data into the table.
+   > **Note:** Make sure you removed all column names from the csv, we need to add it as data and column names as part of the table schema.
+   ```sql
+   \copy <schema_name>.<table_name> from '/home/new_dataset.csv' WITH DELIMITER ',' csv;
+   ```
+8. Now use the fdsa admin GUI to add the data source and dataset.
+
+## How to fix permissions errors with the database
+
+If there are issues with the permissions your user has, try these commands:
+
+1. Connect to the database...
+   ```bash
+   docker exec -it fdsa_db bash
+   psql -d fdsa_appliance -U pguser
+   ```
+2. Grant USAGE on schema:
+   ```sql
+   GRANT USAGE ON SCHEMA <schema1> TO <user>;
+   GRANT USAGE ON SCHEMA <schema2> TO <user>;
+   ```
+3. Grant on all tables for DML statements: SELECT, INSERT, UPDATE, DELETE:
+   ```sql
+   GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA <schema1> TO <user>;
+   GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA <schema2> TO <user>;
+   ```
+4. Grant all privileges on all tables in the schema:
+   ```sql
+   GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA <schema1> TO <user>;
+   GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA <schema2> TO <user>;
+   ```
+5. Grant all privileges on all sequences in the schema:
+   ```sql
+   GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA <schema1> TO <user>;
+   GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA <schema2> TO <user>;
+   ```
+6. Grant all privileges on the database:
+   ```sql
+   GRANT ALL PRIVILEGES ON DATABASE <database> TO <user>;
+   ```
+
+## How to create a FAIR Data Steward Token
+
+Following are the instructions on how to generate a FAIR Data Steward Token:
+
+1. Register to ADWB.
+2. Request the FDSA Data Steward user role on FAIR (email [fdsa.support@alzheimersdata.org](mailto:fdsa.support@alzheimersdata.org) if needed).
+3. Create a Token In FAIR:
+   - Sign in to your 'FAIR Data Services' account, where you should have the 'FDSA Data Steward' user role. Then access your user menu and choose 'My API tokens'.
+   - Navigate to the top menu and select 'New'.
+   - Complete the form. Under the 'Role' field, select 'Request Approval' option. Once done, click 'Create'.
+   - Copy the generated token and paste it into the designated field when adding your dataset in FDSA.
+
+## How to install behind a load balancer
+
+This section describes how to add 2 FDSA's to a load balancer configuration.
+
+> To Install behind a load balancer, we assume you have the following setup:
+> - A Fully configured Load Balancer (with full chain certificates and FQDN)
+> - We can provide a HA proxy configuration file for reference
+> - 2+ VM's (to install FDSA with self-signed certificates)
+> - External Postgres DB already configured for FDSA (see page 15)
+
+We will focus on the FDSA installation, and we will leave the LB configuration to your IT department.
+
+### First FDSA instance installation
+
+```bash
+git clone git@github.com:alzheimersdata-org/federated-data-sharing-appliance-releases.git
+cd /var/www/federated-data-sharing-appliance-releases
+```
+Follow installation instructions and install using your LB's FQDN  
+(e.g. `bash ubuntu-startup.sh lb-fqdn`).
+
+Say "yes" to installation with external database and add credentials.
+
+Login into FDSA as root or admin and go to settings to add your LB IP to the whitelist.
+
+Test and log out.
+
+> **NOTE:** If your FDSA is behind a Load Balancer, Firewall, NAT, Proxy, or other network appliance, add the IP (or IP ranges) of that network so your FDSA can receive DARs through your network. In addition, you MAY need to add the following ADWB FAIR public IPs to your front-end network infrastructure: `51.124.14.112` & `51.145.185.18`.
+
+### Second FDSA instance installation
+
+> **NOTE:** Copy the environment file from the first FDSA (VM1) instance over to the second FDSA VM (VM2).
+
+```bash
+git clone git@github.com:alzheimersdata-org/federated-data-sharing-appliance-releases.git
+```
+Copy the `.env` from the VM1 (`/var/www/federated-data-sharing-appliance-releases/.env`) and paste it in the VM2 (replacing here the existent `.env`).
+
+Open the `.env` file from VM2 and remove server id value: e.g. `SERVER_ID=''`
+
+Follow installation instructions and install using your LB's FQDN  
+(e.g. `bash ubuntu-startup.sh lb-fqdn`).
+
+Say "yes" to installation with external database and add credentials.
+
+Finish installation and move on to the next step.
+
+### Final steps after both FDSA instances are up and running
+
+> **NOTE:** We will be syncing the 2 FDSA and the external DB
+
+Go back to your VM1.
+
+```bash
+cd /var/www/federated-data-sharing-appliance-releases  
+docker compose stop && docker compose start
+```
+
+Login to the LB `https://<fqdn>/admin` and test.

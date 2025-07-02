@@ -1,0 +1,61 @@
+---
+title: Upgrade Guide
+---
+
+# Upgrade Guide
+
+To update FDSA, follow the steps below:
+
+## Ubuntu OS
+
+1. Log in as the root user:
+   ```bash
+   sudo su
+   ```
+2. Go to the installation directory:
+   ```bash
+   cd /var/www/federated-data-sharing-appliance-releases
+   ```
+3. Run the Ubuntu upgrade script:
+   ```bash
+   bash change-version.sh
+   ```
+
+## Rocky OS
+
+1. Log in as the root user:
+   ```bash
+   sudo su
+   ```
+2. Go to the installation directory:
+   ```bash
+   cd /var/www/federated-data-sharing-appliance-releases
+   ```
+3. Run the Rocky upgrade script:
+   ```bash
+   bash rocky-update-version.sh
+   ```
+
+---
+
+## Unattended Installation
+
+If you prefer an unattended installation, fill in the 'Database Credentials' sections in the `.env` file with your preferred configuration. For example:
+
+```env
+PGHOST='fdsa-database.postgres.database.com'
+PGDATABASE='fdsa_database'
+PGUSER='fdsa_user'
+PGPASSWORD='fdsa_pass'
+```
+
+Then, run one of the following lines based on your database choice:
+
+- **For an external database:**
+  ```bash
+  printf 'yes\nyes\n' | bash ubuntu-startup.sh host.example.com
+  ```
+- **For a local database:**
+  ```bash
+  printf 'yes\nno\n' | bash ubuntu-startup.sh host.example.com
+  ```

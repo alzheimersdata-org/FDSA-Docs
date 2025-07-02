@@ -16,18 +16,28 @@
           "icon": "question-circle"
         },
         {
-          "title": "Installation guide",
+          "title": "Installation Prerequisites",
+          "href": "/FDSA_prerequisites",
+          "icon": "arrow-right"
+        },
+        {
+          "title": "Installation Guide",
           "href": "/installation_guide",
           "icon": "arrow-right"
         },
         {
-          "title": "Getting Started",
-          "href": "/getting-started",
+          "title": "Upgrade Guide",
+          "href": "/upgrade_guide",
           "icon": "arrow-right"
         },
         {
-          "title": "Development",
-          "href": "/development",
+          "title": "How To's",
+          "href": "/how_tos",
+          "icon": "arrow-right"
+        },
+        {
+          "title": "Admins - First Time Config",
+          "href": "/admin_first_time_config",
           "icon": "arrow-right"
         }
       ]
