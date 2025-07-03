@@ -1,44 +1,106 @@
 {
   "name": "FDSA & QB - Docs",
   "description": "FDSA & QB - Documentation site",
+
+  "tabs": [
+    {
+      "id": "FDSA",
+      "title": "FDSA",
+      "href": "/fdsa/overview"
+    },
+    {
+      "id": "QB",
+      "title": "Query Builder",
+      "href": "/qb/overview"
+    }
+  ],
+
+
   "sidebar": [
     {
       "group": "Getting Started",
       "pages": [
         {
-          "title": "Overview",
+          "title": "Projects Overview",
           "href": "/",
+          "icon": "rocket"
+        }
+      ]
+    },
+    {
+      "group": "FDSA",
+      "tab": "FDSA",
+      "pages": [
+        {
+          "title": "FDSA Overview",
+          "href": "/fdsa/overview",
           "icon": "rocket"
         },
         {
           "title": "Frequently Asked Questions",
-          "href": "/frequently_asked_questions",
+          "href": "/fdsa/faqs",
           "icon": "question-circle"
         },
         {
           "title": "Installation Prerequisites",
-          "href": "/FDSA_prerequisites",
+          "href": "/fdsa/fdsa_prerequisites",
           "icon": "arrow-right"
         },
         {
           "title": "Installation Guide",
-          "href": "/installation_guide",
+          "href": "/fdsa/installation_guide",
           "icon": "arrow-right"
         },
         {
           "title": "Upgrade Guide",
-          "href": "/upgrade_guide",
+          "href": "/fdsa/upgrade_guide",
           "icon": "arrow-right"
         },
         {
           "title": "How To's",
-          "href": "/how_tos",
+          "href": "/fdsa/how_tos",
           "icon": "arrow-right"
         },
         {
-          "title": "Admins - First Time Config",
-          "href": "/admin_first_time_config",
+          "title": "The FDSA UI",
+          "href": "/fdsa/the_fdsa_ui",
           "icon": "arrow-right"
+        },
+        {
+          "title": "FDSA First Time Config",
+          "href": "/fdsa/admin_first_time_config",
+          "icon": "arrow-right"
+        },
+        {
+          "title": "Reviewing Models and Tasks",
+          "href": "/fdsa/admin_reviewing_models_and_tasks",
+          "icon": "arrow-right"
+        }
+      ]
+    },
+    {
+      "group": "Query Builder",
+      "tab": "QB",
+      "pages": [
+        {
+          "title": "QB Overview",
+          "href": "/qb/overview",
+          "icon": "rocket"
+        },
+        {
+          "title": "The QB UI",
+          "href": "/qb/the_qb_ui",
+          "icon": "rocket"
+        },
+        {
+          "title": "Submitting Tasks",
+          "href": "/qb/submitting_tasks",
+          "icon": "rocket"
+        },
+        {
+          "title": "Uploading Models",
+          "href": "/qb/uploading_models",
+          "icon": "rocket"
         }
       ]
     }
